@@ -10,8 +10,8 @@ type Criterion struct {
 	IsCompleted bool
 }
 
-func NewCriterion(description common.Description) Criterion {
-	criterion := Criterion{
+func NewCriterion(description common.Description) *Criterion {
+	criterion := &Criterion{
 		Description: description,
 		IsCompleted: false,
 	}

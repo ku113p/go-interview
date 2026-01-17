@@ -7,3 +7,7 @@ type Title struct {
 func NewTitle(value string) Title {
 	return Title{value}
 }
+
+func (t *Title) String() string {
+	return t.value
+}
