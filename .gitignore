@@ -1,24 +1,27 @@
-# Binaries for programs and plugins
+# Go binaries
+go-interview
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
+# Test binaries
 *.test
 
-# Output of the go coverage tool, specifically when run with the -o flag
+# Coverage profiles
 *.out
+*.cover
 
-# Dependency directories (remove the comment below to include it)
+# Dependency directories
 # vendor/
 
 # Go workspace file
 go.work
 
-# VS Code specific
+# IDE settings
 .vscode/
+.idea/
 
 # Build output
 build/
@@ -26,3 +29,7 @@ dist/
 
 # Log files
 *.log
+
+# OS-generated files
+.DS_Store
+Thumbs.db
