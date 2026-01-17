@@ -7,3 +7,7 @@ type Description struct {
 func NewDescription(value string) Description {
 	return Description{value}
 }
+
+func (d *Description) String() string {
+	return d.value
+}

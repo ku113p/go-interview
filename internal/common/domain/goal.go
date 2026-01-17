@@ -7,3 +7,7 @@ type Goal struct {
 func NewGoal(value string) Goal {
 	return Goal{value}
 }
+
+func (g *Goal) String() string {
+	return g.value
+}
