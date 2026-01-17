@@ -1,6 +1,9 @@
 package postgres
 
-import "go-interview/internal/biography/domain"
+import (
+	"go-interview/internal/biography/domain"
+	common "go-interview/internal/common/domain"
+)
 
 func toSQL(area *domain.LifeArea) (*LifeAreaSQL, []*CriterionSQL) {
 	node := &LifeAreaSQL{
@@ -26,4 +29,35 @@ func toSQL(area *domain.LifeArea) (*LifeAreaSQL, []*CriterionSQL) {
 	}
 
 	return node, criteria
+}
+
+func (dto *LifeAreaSQL) ToDomain() *domain.LifeArea {
+	return &domain.LifeArea{
+		UpdatableEntity: common.UpdatableEntity{
+			Entity: common.Entity{
+				ID:        dto.ID,
+				CreatedAt: dto.CreatedAt,
+			},
+			UpdatedAt: dto.UpdatedAt,
+		},
+		ParentID: &dto.ParentID,
+		UserID:   dto.UserID,
+		Title:    common.NewTitle(dto.Title),
+		Goal:     common.NewGoal(dto.Goal),
+		Criteria: make([]*domain.Criterion, 0),
+	}
+}
+
+func (dto *CriterionSQL) ToDomain() *domain.Criterion {
+	return &domain.Criterion{
+		UpdatableEntity: common.UpdatableEntity{
+			Entity: common.Entity{
+				ID:        dto.ID,
+				CreatedAt: dto.CreatedAT,
+			},
+			UpdatedAt: dto.UpdatedAt,
+		},
+		Description: common.NewDescription(dto.Description),
+		IsCompleted: dto.IsCompleted,
+	}
 }
