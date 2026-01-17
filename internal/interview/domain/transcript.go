@@ -1,15 +1,21 @@
 package domain
 
-import common "go-interview/internal/common/domain"
+import (
+	common "go-interview/internal/common/domain"
+
+	"github.com/google/uuid"
+)
 
 type Transcript struct {
 	common.UpdatableEntity
-	Content common.Content
+	RawDataID uuid.UUID
+	Content   common.Content
 }
 
-func NewTranscript(content common.Content) *Transcript {
+func NewTranscript(rawDataID uuid.UUID, content common.Content) *Transcript {
 	transcript := &Transcript{
-		Content: content,
+		RawDataID: rawDataID,
+		Content:   content,
 	}
 
 	common.InitUpdatableEntity(&transcript.UpdatableEntity)
