@@ -5,20 +5,20 @@ import (
 	"go-interview/internal/biography/domain"
 )
 
-type Handler struct {
-	repo domain.LifeAreaRepository
+type GetLifeAreaHandler struct {
+	repo domain.LifeAreaGetter
 }
 
-func NewHandler(repo domain.LifeAreaRepository) *Handler {
-	return &Handler{
+func NewGetLifeAreaHandler(repo domain.LifeAreaGetter) *GetLifeAreaHandler {
+	return &GetLifeAreaHandler{
 		repo: repo,
 	}
 }
 
-func (h *Handler) Handle(ctx context.Context, query Query) (Result, error) {
+func (h *GetLifeAreaHandler) Handle(ctx context.Context, query GetLifeAreaQuery) (GetLifeAreaResult, error) {
 	la, err := h.repo.GetLifeArea(ctx, query.ID)
 	if err != nil {
-		return Result{}, err
+		return GetLifeAreaResult{}, err
 	}
 
 	var parentID *string
@@ -36,7 +36,7 @@ func (h *Handler) Handle(ctx context.Context, query Query) (Result, error) {
 		})
 	}
 
-	return Result{
+	return GetLifeAreaResult{
 		ID:        la.ID.String(),
 		Title:     la.Title.String(),
 		Goal:      la.Goal.String(),

@@ -1,6 +1,6 @@
 package get
 
-type Result struct {
+type GetLifeAreaResult struct {
 	ID        string       `json:"id"`
 	Title     string       `json:"title"`
 	Goal      string       `json:"goal"`
