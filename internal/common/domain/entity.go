@@ -21,6 +21,10 @@ type UpdatableEntity struct {
 	UpdatedAt time.Time
 }
 
+func (e *UpdatableEntity) Update() {
+	e.UpdatedAt = time.Now()
+}
+
 func InitUpdatableEntity(entity *UpdatableEntity) {
 	now := time.Now()
 	entity.ID = uuid.New()

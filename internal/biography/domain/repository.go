@@ -7,6 +7,9 @@ import (
 )
 
 type LifeAreaRepository interface {
-	Save(ctx context.Context, area *LifeArea) error
-	GetByID(ctx context.Context, id uuid.UUID) (*LifeArea, error)
+	CreateLifeArea(ctx context.Context, la *LifeArea) error
+	GetLifeArea(ctx context.Context, ID uuid.UUID) (*LifeArea, error)
+	ListLifeAreas(ctx context.Context, userID uuid.UUID) ([]*LifeArea, error)
+	DeleteLifeArea(ctx context.Context, ID uuid.UUID) error
+	UpdateLifeArea(ctx context.Context, la *LifeArea) error
 }
