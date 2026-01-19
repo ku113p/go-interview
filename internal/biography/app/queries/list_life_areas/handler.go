@@ -7,34 +7,34 @@ import (
 	"github.com/google/uuid"
 )
 
-type Handler struct {
-	repo domain.LifeAreaRepository
+type ListLifeAreaHandler struct {
+	repo domain.LifeAreaLister
 }
 
-func NewHandler(repo domain.LifeAreaRepository) *Handler {
-	return &Handler{
+func NewListLifeAreaHandler(repo domain.LifeAreaLister) *ListLifeAreaHandler {
+	return &ListLifeAreaHandler{
 		repo: repo,
 	}
 }
 
-func (h *Handler) Handle(ctx context.Context, query Query) (Result, error) {
+func (h *ListLifeAreaHandler) Handle(ctx context.Context, query ListLifeAreaQuery) (*ListLifeAreaResult, error) {
 	userID, err := uuid.Parse(query.UserID)
 	if err != nil {
-		return Result{}, err
+		return nil, err
 	}
 
 	las, err := h.repo.ListLifeAreas(ctx, userID)
 	if err != nil {
-		return Result{}, err
+		return nil, err
 	}
-	result := make([]*AreaLife, 0, len(las))
+	result := make([]*LifeArea, 0, len(las))
 	for _, la := range las {
 		var parentID *string
 		if la.ParentID != nil {
 			idStr := la.ParentID.String()
 			parentID = &idStr
 		}
-		result = append(result, &AreaLife{
+		result = append(result, &LifeArea{
 			ID:        la.ID.String(),
 			Title:     la.Title.String(),
 			Goal:      la.Goal.String(),
@@ -43,7 +43,7 @@ func (h *Handler) Handle(ctx context.Context, query Query) (Result, error) {
 			UpdatedAt: la.UpdatedAt.String(),
 		})
 	}
-	return Result{
+	return &ListLifeAreaResult{
 		Items: result,
 	}, nil
 }

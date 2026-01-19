@@ -2,6 +2,6 @@ package get
 
 import "github.com/google/uuid"
 
-type Query struct {
+type GetLifeAreaQuery struct {
 	ID uuid.UUID
 }

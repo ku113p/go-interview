@@ -1,10 +1,10 @@
 package list
 
-type Result struct {
-	Items []*AreaLife `json:"items"`
+type ListLifeAreaResult struct {
+	Items []*LifeArea `json:"items"`
 }
 
-type AreaLife struct {
+type LifeArea struct {
 	ID        string  `json:"id"`
 	Title     string  `json:"title"`
 	Goal      string  `json:"goal"`
