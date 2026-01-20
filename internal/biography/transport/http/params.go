@@ -1,12 +1,11 @@
 package http
 
-import "net/http"
+import "github.com/gin-gonic/gin"
 
-func getPathParam(r *http.Request, key string) (string, bool) {
-	params, ok := r.Context().Value(paramsContextKey).(map[string]string)
-	if !ok {
+func getPathParam(c *gin.Context, key string) (string, bool) {
+	value := c.Param(key)
+	if value == "" {
 		return "", false
 	}
-	value, ok := params[key]
-	return value, ok
+	return value, true
 }

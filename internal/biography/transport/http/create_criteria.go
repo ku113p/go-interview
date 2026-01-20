@@ -1,54 +1,50 @@
 package http
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	usecase "go-interview/internal/biography/app/commands/create_criteria"
 	"go-interview/internal/biography/domain"
 )
 
+// CreateCriteriaHandlerHTTP handles POST /life-areas/:id/criteria requests.
 type CreateCriteriaHandlerHTTP struct {
 	useCase *usecase.CreateCriteriaHandler
 }
 
 func NewCreateCriteriaHandlerHTTP(uc *usecase.CreateCriteriaHandler) *CreateCriteriaHandlerHTTP {
-	return &CreateCriteriaHandlerHTTP{
-		useCase: uc,
-	}
+	return &CreateCriteriaHandlerHTTP{useCase: uc}
 }
 
-func (h *CreateCriteriaHandlerHTTP) Handle(w http.ResponseWriter, r *http.Request) {
-	lifeAreaID, ok := getPathParam(r, "id")
-	if !ok {
-		http.Error(w, "life_area_id path parameter is required", http.StatusBadRequest)
+func (h *CreateCriteriaHandlerHTTP) Handle(c *gin.Context) {
+	lifeAreaID := c.Param("id")
+	if lifeAreaID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "life_area_id path parameter is required"})
 		return
 	}
 
 	var cmd usecase.CreateCriteriaCommand
-	if err := json.NewDecoder(r.Body).Decode(&cmd); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&cmd); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
-
 	cmd.LifeAreaID = lifeAreaID
 
-	result, err := h.useCase.Handle(r.Context(), cmd)
+	result, err := h.useCase.Handle(c.Request.Context(), cmd)
 	if err != nil {
-		if errors.Is(err, domain.ErrForbidden) {
-			http.Error(w, "forbidden", http.StatusForbidden)
-		} else if errors.Is(err, domain.ErrNotFound) {
-			http.Error(w, "life area not found", http.StatusNotFound)
-		} else {
-			http.Error(w, "internal server error", http.StatusInternalServerError)
+		switch {
+		case errors.Is(err, domain.ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		case errors.Is(err, domain.ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "life area not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		}
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-	}
+	c.JSON(http.StatusCreated, result)
 }

@@ -1,53 +1,41 @@
 package http
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	usecase "go-interview/internal/biography/app/queries/get_life_area"
 	"go-interview/internal/biography/domain"
 )
 
+// GetLifeAreaHandlerHTTP handles GET /life-areas/:id requests.
 type GetLifeAreaHandlerHTTP struct {
 	useCase *usecase.GetLifeAreaHandler
 }
 
 func NewGetLifeAreaHandlerHTTP(uc *usecase.GetLifeAreaHandler) *GetLifeAreaHandlerHTTP {
-	return &GetLifeAreaHandlerHTTP{
-		useCase: uc,
-	}
+	return &GetLifeAreaHandlerHTTP{useCase: uc}
 }
 
-func (h *GetLifeAreaHandlerHTTP) Handle(w http.ResponseWriter, r *http.Request) {
-	params, ok := r.Context().Value(paramsContextKey).(map[string]string)
-	if !ok {
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-	id, ok := params["id"]
-	if !ok {
-		http.Error(w, "id not found in path", http.StatusBadRequest)
+func (h *GetLifeAreaHandlerHTTP) Handle(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id not found in path"})
 		return
 	}
 
-	query := usecase.GetLifeAreaQuery{
-		ID: id,
-	}
-
-	result, err := h.useCase.Handle(r.Context(), query)
+	query := usecase.GetLifeAreaQuery{ID: id}
+	result, err := h.useCase.Handle(c.Request.Context(), query)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			http.Error(w, "life area not found", http.StatusNotFound)
-		} else {
-			http.Error(w, "internal server error", http.StatusInternalServerError)
+			c.JSON(http.StatusNotFound, gin.H{"error": "life area not found"})
+			return
 		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-	}
+	c.JSON(http.StatusOK, result)
 }
