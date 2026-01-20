@@ -19,10 +19,12 @@ type Criterion struct {
 }
 
 func NewCriterion(id uuid.UUID, nodeID uuid.UUID, description Description) *Criterion {
+	now := time.Now()
+
 	return &Criterion{
-		ID:          uuid.New(),
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:          id,
+		CreatedAt:   now,
+		UpdatedAt:   now,
 		NodeID:      nodeID,
 		Description: description,
 		IsCompleted: false,
