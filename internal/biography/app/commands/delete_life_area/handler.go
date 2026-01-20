@@ -2,7 +2,7 @@ package delete_life_area
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"go-interview/internal/biography/domain"
 
 	"github.com/google/uuid"
@@ -36,11 +36,14 @@ func (h *DeleteLifeAreaHandler) Handle(ctx context.Context, cmd DeleteLifeAreaCo
 
 	lifeArea, err := h.repo.GetLifeArea(ctx, id)
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrNotFound
+		}
 		return nil, err
 	}
 
 	if lifeArea.UserID != userID {
-		return nil, fmt.Errorf("user %s is not owner of life area %s", userID, id)
+		return nil, domain.ErrForbidden
 	}
 
 	err = h.repo.DeleteLifeArea(ctx, id)

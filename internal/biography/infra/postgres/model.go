@@ -8,14 +8,13 @@ import (
 )
 
 type LifeAreaSQL struct {
-	ID        uuid.UUID       `db:"id"`
-	ParentID  uuid.UUID       `db:"parent_id"`
-	UserID    uuid.UUID       `db:"user_id"`
-	CreatedAt time.Time       `db:"created_at"`
-	UpdatedAt time.Time       `db:"updated_at"`
-	Title     string          `db:"title"`
-	Goal      string          `db:"goal"`
-	Criteria  []*CriterionSQL `db:"criteria"`
+	ID        uuid.UUID  `db:"id"`
+	ParentID  *uuid.UUID `db:"parent_id"`
+	UserID    uuid.UUID  `db:"user_id"`
+	CreatedAt time.Time  `db:"created_at"`
+	UpdatedAt time.Time  `db:"updated_at"`
+	Title     string     `db:"title"`
+	Goal      string     `db:"goal"`
 }
 
 type CriterionSQL struct {

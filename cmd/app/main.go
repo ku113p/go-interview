@@ -5,12 +5,10 @@ import (
 	"log"
 	"net/http"
 
-	httpTransport "go-interview/internal/biography/transport/http"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	create_life_area "go-interview/internal/biography/app/commands/create_life_area"
 	"go-interview/internal/biography/infra/postgres"
+	httpTransport "go-interview/internal/biography/transport/http"
 	"go-interview/pkg/utils"
 )
 
@@ -24,9 +22,10 @@ func main() {
 	repo := postgres.NewAreaRepository(db)
 	genID := utils.NewUUID7Generator()
 
-	useCase := create_life_area.NewCreateLifeAreaHandler(repo, genID)
-	httpHandler := httpTransport.NewCreateLifeAreaHandlerHTTP(useCase)
-	http.HandleFunc("/life-areas", httpHandler.Handle)
+	router := httpTransport.NewRouter(repo, genID)
 
-	http.ListenAndServe(":8080", nil)
+	log.Println("Server starting on port 8080...")
+	if err := http.ListenAndServe(":8080", router); err != nil {
+		log.Fatal(err)
+	}
 }

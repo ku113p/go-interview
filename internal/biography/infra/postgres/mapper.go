@@ -15,13 +15,12 @@ func lifeAreaToSQL(area *domain.LifeArea) *LifeAreaSQL {
 
 	node := &LifeAreaSQL{
 		ID:        area.ID,
-		ParentID:  *area.ParentID,
+		ParentID:  area.ParentID,
 		UserID:    area.UserID,
 		CreatedAt: area.CreatedAt,
 		UpdatedAt: area.UpdatedAt,
 		Title:     area.Title.String(),
 		Goal:      area.Goal.String(),
-		Criteria:  criteria,
 	}
 
 	return node
@@ -43,7 +42,7 @@ func (dto *LifeAreaSQL) ToDomain() *domain.LifeArea {
 		ID:        dto.ID,
 		CreatedAt: dto.CreatedAt,
 		UpdatedAt: dto.UpdatedAt,
-		ParentID:  &dto.ParentID,
+		ParentID:  dto.ParentID,
 		UserID:    dto.UserID,
 		Title:     domain.NewTitle(dto.Title),
 		Goal:      domain.NewGoal(dto.Goal),

@@ -2,7 +2,7 @@ package change_life_area_goal
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"go-interview/internal/biography/domain"
 
 	"github.com/google/uuid"
@@ -36,11 +36,14 @@ func (h *ChangeLifeAreaGoalHandler) Handle(ctx context.Context, cmd ChangeLifeAr
 
 	lifeArea, err := h.repo.GetLifeArea(ctx, id)
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrNotFound
+		}
 		return nil, err
 	}
 
 	if lifeArea.UserID != userID {
-		return nil, fmt.Errorf("user %s is not owner of life area %s", userID, id)
+		return nil, domain.ErrForbidden
 	}
 
 	err = h.repo.ChangeGoal(ctx, lifeArea.ID, domain.NewGoal(cmd.Goal))
