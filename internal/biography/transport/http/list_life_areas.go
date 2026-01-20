@@ -1,42 +1,35 @@
 package http
 
 import (
-	"encoding/json"
 	"net/http"
 
-	usecase "go-interview/internal/biography/app/queries/list_life_areas"
+	"github.com/gin-gonic/gin"
+
+	listlifeareas "go-interview/internal/biography/app/queries/list_life_areas"
 )
 
+// ListLifeAreasHandlerHTTP handles GET /life-areas requests.
 type ListLifeAreasHandlerHTTP struct {
-	useCase *usecase.ListLifeAreaHandler
+	useCase *listlifeareas.ListLifeAreaHandler
 }
 
-func NewListLifeAreasHandlerHTTP(uc *usecase.ListLifeAreaHandler) *ListLifeAreasHandlerHTTP {
-	return &ListLifeAreasHandlerHTTP{
-		useCase: uc,
-	}
+func NewListLifeAreasHandlerHTTP(uc *listlifeareas.ListLifeAreaHandler) *ListLifeAreasHandlerHTTP {
+	return &ListLifeAreasHandlerHTTP{useCase: uc}
 }
 
-func (h *ListLifeAreasHandlerHTTP) Handle(w http.ResponseWriter, r *http.Request) {
-	userID := r.URL.Query().Get("user_id")
+func (h *ListLifeAreasHandlerHTTP) Handle(c *gin.Context) {
+	userID := c.Query("user_id")
 	if userID == "" {
-		http.Error(w, "user_id query parameter is required", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id query parameter is required"})
 		return
 	}
 
-	query := usecase.ListLifeAreaQuery{
-		UserID: userID,
-	}
-
-	result, err := h.useCase.Handle(r.Context(), query)
+	query := listlifeareas.ListLifeAreaQuery{UserID: userID}
+	result, err := h.useCase.Handle(c.Request.Context(), query)
 	if err != nil {
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-	}
+	c.JSON(http.StatusOK, result)
 }
