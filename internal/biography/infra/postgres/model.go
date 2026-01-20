@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type LifeAreaSQL struct {
@@ -24,4 +25,27 @@ type CriterionSQL struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 	Description string    `db:"description"`
 	IsCompleted bool      `db:"is_completed"`
+}
+
+func (dto *LifeAreaSQL) Scan(s pgx.Row) error {
+	return s.Scan(
+		&dto.ID,
+		&dto.ParentID,
+		&dto.UserID,
+		&dto.CreatedAt,
+		&dto.UpdatedAt,
+		&dto.Title,
+		&dto.Goal,
+	)
+}
+
+func (dto *CriterionSQL) Scan(s pgx.Row) error {
+	return s.Scan(
+		&dto.ID,
+		&dto.NodeID,
+		&dto.CreatedAt,
+		&dto.UpdatedAt,
+		&dto.Description,
+		&dto.IsCompleted,
+	)
 }

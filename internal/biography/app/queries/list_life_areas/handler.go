@@ -1,4 +1,4 @@
-package list
+package list_live_area
 
 import (
 	"context"
@@ -8,12 +8,14 @@ import (
 )
 
 type ListLifeAreaHandler struct {
-	repo domain.LifeAreaLister
+	repo  domain.LifeAreaLister
+	genID domain.IDGenerator
 }
 
-func NewListLifeAreaHandler(repo domain.LifeAreaLister) *ListLifeAreaHandler {
+func NewListLifeAreaHandler(repo domain.LifeAreaLister, genID domain.IDGenerator) *ListLifeAreaHandler {
 	return &ListLifeAreaHandler{
-		repo: repo,
+		repo:  repo,
+		genID: genID,
 	}
 }
 

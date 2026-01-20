@@ -37,3 +37,7 @@ type CriteriaDeleter interface {
 type CriteriaCreator interface {
 	CreateCriteria(ctx context.Context, criteria ...*Criterion) error
 }
+
+type IDGenerator interface {
+	GenID() (uuid.UUID, error)
+}

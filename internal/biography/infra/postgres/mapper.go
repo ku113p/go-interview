@@ -2,9 +2,6 @@ package postgres
 
 import (
 	"go-interview/internal/biography/domain"
-	common "go-interview/internal/common/domain"
-
-	"github.com/jackc/pgx/v5"
 )
 
 func lifeAreaToSQL(area *domain.LifeArea) *LifeAreaSQL {
@@ -43,54 +40,24 @@ func criterionToSQL(criterion *domain.Criterion) *CriterionSQL {
 
 func (dto *LifeAreaSQL) ToDomain() *domain.LifeArea {
 	return &domain.LifeArea{
-		UpdatableEntity: common.UpdatableEntity{
-			Entity: common.Entity{
-				ID:        dto.ID,
-				CreatedAt: dto.CreatedAt,
-			},
-			UpdatedAt: dto.UpdatedAt,
-		},
-		ParentID: &dto.ParentID,
-		UserID:   dto.UserID,
-		Title:    domain.NewTitle(dto.Title),
-		Goal:     domain.NewGoal(dto.Goal),
-		Criteria: make([]*domain.Criterion, 0),
+		ID:        dto.ID,
+		CreatedAt: dto.CreatedAt,
+		UpdatedAt: dto.UpdatedAt,
+		ParentID:  &dto.ParentID,
+		UserID:    dto.UserID,
+		Title:     domain.NewTitle(dto.Title),
+		Goal:      domain.NewGoal(dto.Goal),
+		Criteria:  make([]*domain.Criterion, 0),
 	}
 }
 
 func (dto *CriterionSQL) ToDomain() *domain.Criterion {
 	return &domain.Criterion{
-		UpdatableEntity: common.UpdatableEntity{
-			Entity: common.Entity{
-				ID:        dto.ID,
-				CreatedAt: dto.CreatedAt,
-			},
-			UpdatedAt: dto.UpdatedAt,
-		},
+		ID:          dto.ID,
+		CreatedAt:   dto.CreatedAt,
+		UpdatedAt:   dto.UpdatedAt,
+		NodeID:      dto.NodeID,
 		Description: domain.NewDescription(dto.Description),
 		IsCompleted: dto.IsCompleted,
 	}
-}
-
-func (dto *LifeAreaSQL) Scan(s pgx.Row) error {
-	return s.Scan(
-		&dto.ID,
-		&dto.ParentID,
-		&dto.UserID,
-		&dto.CreatedAt,
-		&dto.UpdatedAt,
-		&dto.Title,
-		&dto.Goal,
-	)
-}
-
-func (dto *CriterionSQL) Scan(s pgx.Row) error {
-	return s.Scan(
-		&dto.ID,
-		&dto.NodeID,
-		&dto.CreatedAt,
-		&dto.UpdatedAt,
-		&dto.Description,
-		&dto.IsCompleted,
-	)
 }
