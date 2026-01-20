@@ -1,8 +1,10 @@
-package get
+package get_life_area
 
 import (
 	"context"
 	"go-interview/internal/biography/domain"
+
+	"github.com/google/uuid"
 )
 
 type GetLifeAreaHandler struct {
@@ -15,10 +17,15 @@ func NewGetLifeAreaHandler(repo domain.LifeAreaGetter) *GetLifeAreaHandler {
 	}
 }
 
-func (h *GetLifeAreaHandler) Handle(ctx context.Context, query GetLifeAreaQuery) (GetLifeAreaResult, error) {
-	la, err := h.repo.GetLifeArea(ctx, query.ID)
+func (h *GetLifeAreaHandler) Handle(ctx context.Context, query GetLifeAreaQuery) (*GetLifeAreaResult, error) {
+	queryID, err := uuid.Parse(query.ID)
 	if err != nil {
-		return GetLifeAreaResult{}, err
+		return nil, err
+	}
+
+	la, err := h.repo.GetLifeArea(ctx, queryID)
+	if err != nil {
+		return nil, err
 	}
 
 	var parentID *string
@@ -36,7 +43,7 @@ func (h *GetLifeAreaHandler) Handle(ctx context.Context, query GetLifeAreaQuery)
 		})
 	}
 
-	return GetLifeAreaResult{
+	return &GetLifeAreaResult{
 		ID:        la.ID.String(),
 		Title:     la.Title.String(),
 		Goal:      la.Goal.String(),

@@ -1,4 +1,4 @@
-package get
+package get_life_area
 
 type GetLifeAreaResult struct {
 	ID        string       `json:"id"`

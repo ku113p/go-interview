@@ -1,24 +1,30 @@
 package domain
 
 import (
-	common "go-interview/internal/common/domain"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type Criterion struct {
-	common.UpdatableEntity
+	ID uuid.UUID
 
-	NodeID      uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
+	NodeID uuid.UUID
+
 	Description Description
 	IsCompleted bool
 }
 
-func NewCriterion(description Description) *Criterion {
-	criterion := &Criterion{
+func NewCriterion(id uuid.UUID, nodeID uuid.UUID, description Description) *Criterion {
+	return &Criterion{
+		ID:          uuid.New(),
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+		NodeID:      nodeID,
 		Description: description,
 		IsCompleted: false,
 	}
-	common.InitUpdatableEntity(&criterion.UpdatableEntity)
-	return criterion
 }

@@ -1,4 +1,4 @@
-package list
+package list_live_area
 
 type ListLifeAreaResult struct {
 	Items []*LifeArea `json:"items"`

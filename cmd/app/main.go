@@ -8,9 +8,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"go-interview/internal/biography/application"
-	"go-interview/internal/biography/application/dto"
-	"go-interview/internal/biography/infrastructure/persistence/postgres"
+	create_life_area "go-interview/internal/biography/app/commands/create_life_area"
+	get_life_area "go-interview/internal/biography/app/queries/get_life_area"
+	"go-interview/internal/biography/infra/postgres"
+	"go-interview/pkg/utils"
 )
 
 func main() {
@@ -21,35 +22,33 @@ func main() {
 	defer db.Close()
 
 	areaRepo := postgres.NewAreaRepository(db)
-	areaService := application.NewAreaService(areaRepo)
+	genID := utils.NewUUID7Generator()
 
-	userID := uuid.New()
-	newArea, err := areaService.Create(context.Background(), dto.CreateAreaRequest{
-		UserID:   userID,
+	createHandler := create_life_area.NewCreateLifeAreaHandler(areaRepo, genID)
+	getHandler := get_life_area.NewGetLifeAreaHandler(areaRepo)
+
+	createCmd := create_life_area.CreateLifeAreaCommand{
+		UserID:   uuid.New().String(),
 		ParentID: nil,
-		Title:    "New Life Area",
-		Goal:     "Initial Goal",
-	})
+		Title:    "New Life Area from command",
+		Goal:     "Initial Goal from command",
+	}
+
+	createResult, err := createHandler.Handle(context.Background(), createCmd)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("created area: %v\n", newArea)
+	fmt.Printf("created life area: %s\n", createResult)
 
-	err = areaService.ChangeGoal(context.Background(), dto.ChangeGoalRequest{
-		ID:   newArea.ID,
-		Goal: "Updated Goal",
-	})
+	getQuery := get_life_area.GetLifeAreaQuery{
+		ID: createResult.ID,
+	}
+
+	getResult, err := getHandler.Handle(context.Background(), getQuery)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("changed goal of the area")
-
-	areas, err := areaService.List(context.Background(), userID)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("areas for user %s: %v\n", userID, areas)
+	fmt.Printf("retrieved life area: %+v\n", getResult)
 }

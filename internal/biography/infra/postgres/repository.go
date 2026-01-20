@@ -61,9 +61,42 @@ func (r *AreaRepository) save(ctx context.Context, area *domain.LifeArea) error 
 		return fmt.Errorf("delete criteria: %w", err)
 	}
 
-	err = r.CreateCriteria(ctx, area.Criteria...)
-	if err != nil {
-		return fmt.Errorf("create criteria: %w", err)
+	if len(area.Criteria) > 0 {
+		values := make([]string, 0, len(area.Criteria))
+		args := make([]any, 0, len(area.Criteria)*6)
+
+		argPos := 1
+		for _, c := range area.Criteria {
+			values = append(values,
+				fmt.Sprintf(
+					"($%d,$%d,$%d,$%d,$%d,$%d)",
+					argPos, argPos+1, argPos+2,
+					argPos+3, argPos+4, argPos+5,
+				),
+			)
+
+			c.NodeID = area.ID
+
+			args = append(args,
+				c.ID,
+				c.NodeID,
+				c.CreatedAt,
+				c.UpdatedAt,
+				c.Description.String(),
+				c.IsCompleted,
+			)
+
+			argPos += 6
+		}
+		joinedValues := strings.Join(values, ",\n")
+		query := fmt.Sprintf(
+			"INSERT INTO criteria (id, node_id, created_at, updated_at, description, is_completed) VALUES %s",
+			joinedValues,
+		)
+
+		if _, err = tx.Exec(ctx, query, args...); err != nil {
+			return err
+		}
 	}
 
 	return tx.Commit(ctx)
@@ -75,6 +108,10 @@ func (r *AreaRepository) CreateCriteria(ctx context.Context, criteria ...*domain
 		return err
 	}
 	defer tx.Rollback(ctx)
+
+	if len(criteria) == 0 {
+		return nil
+	}
 
 	values := make([]string, 0, len(criteria))
 	args := make([]any, 0, len(criteria)*6)
@@ -100,9 +137,10 @@ func (r *AreaRepository) CreateCriteria(ctx context.Context, criteria ...*domain
 
 		argPos += 6
 	}
+
 	joinedValues := strings.Join(values, ",\n")
 	query := fmt.Sprintf(
-		"INSERT INTO criteria () (email, name) VALUES %s",
+		"INSERT INTO criteria (id, node_id, created_at, updated_at, description, is_completed) VALUES %s",
 		joinedValues,
 	)
 
@@ -110,7 +148,7 @@ func (r *AreaRepository) CreateCriteria(ctx context.Context, criteria ...*domain
 		return err
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }
 
 func (r *AreaRepository) GetLifeArea(ctx context.Context, id uuid.UUID) (*domain.LifeArea, error) {

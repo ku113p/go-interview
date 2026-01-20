@@ -1,7 +1,5 @@
-package get
-
-import "github.com/google/uuid"
+package get_life_area
 
 type GetLifeAreaQuery struct {
-	ID uuid.UUID
+	ID string
 }
