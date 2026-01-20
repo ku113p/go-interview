@@ -1,18 +1,28 @@
 package domain
 
-import "go-interview/internal/common/domain"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Embedding struct {
-	domain.Entity
+	ID uuid.UUID
+
+	CreatedAt time.Time
+
+	NodeID uuid.UUID
+
 	Vector  Vector
-	Content domain.Content
+	Content Content
 }
 
-func NewEmbedding(vector Vector, content domain.Content) *Embedding {
-	embedding := &Embedding{
-		Vector:  vector,
-		Content: content,
+func NewEmbedding(id uuid.UUID, nodeID uuid.UUID, vector Vector, content Content) *Embedding {
+	return &Embedding{
+		ID:        id,
+		NodeID:    nodeID,
+		CreatedAt: time.Now(),
+		Vector:    vector,
+		Content:   content,
 	}
-	domain.InitEntity(&embedding.Entity)
-	return embedding
 }

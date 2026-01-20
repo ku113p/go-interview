@@ -1,16 +1,28 @@
 package domain
 
-import "go-interview/internal/common/domain"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Fact struct {
-	domain.UpdatableEntity
-	Content domain.Content
+	ID uuid.UUID
+
+	CreatedAt time.Time
+
+	NodeID uuid.UUID
+
+	Info     Info
+	DateTime *time.Time
 }
 
-func NewFact(content domain.Content) *Fact {
-	fact := &Fact{
-		Content: content,
+func NewFact(id uuid.UUID, nodeID uuid.UUID, info Info, dateTime *time.Time) *Fact {
+	return &Fact{
+		ID:        id,
+		CreatedAt: time.Now(),
+		NodeID:    nodeID,
+		Info:      info,
+		DateTime:  dateTime,
 	}
-	domain.InitUpdatableEntity(&fact.UpdatableEntity)
-	return fact
 }
