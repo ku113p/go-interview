@@ -2,7 +2,7 @@ package create_criteria
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"go-interview/internal/biography/domain"
 
 	"github.com/google/uuid"
@@ -38,11 +38,14 @@ func (h *CreateCriteriaHandler) Handle(ctx context.Context, cmd CreateCriteriaCo
 
 	lifeArea, err := h.repo.GetLifeArea(ctx, lifeAreaID)
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrNotFound
+		}
 		return nil, err
 	}
 
 	if lifeArea.UserID != userID {
-		return nil, fmt.Errorf("user %s is not owner of life area %s", userID, lifeAreaID)
+		return nil, domain.ErrForbidden
 	}
 
 	criteriaToCreate := make([]*domain.Criterion, 0, len(cmd.Criteria))

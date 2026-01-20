@@ -2,6 +2,7 @@ package get_life_area
 
 import (
 	"context"
+	"errors"
 	"go-interview/internal/biography/domain"
 
 	"github.com/google/uuid"
@@ -25,6 +26,9 @@ func (h *GetLifeAreaHandler) Handle(ctx context.Context, query GetLifeAreaQuery)
 
 	la, err := h.repo.GetLifeArea(ctx, queryID)
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrNotFound
+		}
 		return nil, err
 	}
 

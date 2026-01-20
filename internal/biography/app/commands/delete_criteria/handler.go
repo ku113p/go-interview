@@ -2,7 +2,7 @@ package delete_criteria
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"go-interview/internal/biography/domain"
 
 	"github.com/google/uuid"
@@ -11,6 +11,7 @@ import (
 type DeleteCriteriaRepository interface {
 	domain.CriteriaDeleter
 	domain.LifeAreaGetter
+	domain.CriteriaNodeGetter
 }
 
 type DeleteCriteriaHandler struct {
@@ -38,18 +39,35 @@ func (h *DeleteCriteriaHandler) Handle(ctx context.Context, cmd DeleteCriteriaCo
 		toDeleteIDs = append(toDeleteIDs, id)
 	}
 
-	lifeAreas := make(map[uuid.UUID]*domain.LifeArea)
-	for _, id := range toDeleteIDs {
-		var lifeArea domain.LifeArea
-		if lifeArea, ok := lifeAreas[id]; !ok {
-			lifeArea, err = h.repo.GetLifeArea(ctx, id)
+	criteriaNodeIDs, err := h.repo.GetCriteriaNodeIDs(ctx, toDeleteIDs...)
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+
+	checkedLifeAreas := make(map[uuid.UUID]*domain.LifeArea)
+	for _, criterionID := range toDeleteIDs {
+		lifeAreaID, ok := criteriaNodeIDs[criterionID]
+		if !ok {
+			return nil, domain.ErrNotFound
+		}
+
+		lifeArea, cached := checkedLifeAreas[lifeAreaID]
+		if !cached {
+			lifeArea, err = h.repo.GetLifeArea(ctx, lifeAreaID)
 			if err != nil {
+				if errors.Is(err, domain.ErrNotFound) {
+					return nil, domain.ErrNotFound
+				}
 				return nil, err
 			}
-			lifeAreas[id] = lifeArea
+			checkedLifeAreas[lifeAreaID] = lifeArea
 		}
+
 		if lifeArea.UserID != userID {
-			return nil, fmt.Errorf("user %s is not owner of life area %s", userID, id)
+			return nil, domain.ErrForbidden
 		}
 	}
 

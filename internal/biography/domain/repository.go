@@ -38,6 +38,10 @@ type CriteriaCreator interface {
 	CreateCriteria(ctx context.Context, criteria ...*Criterion) error
 }
 
+type CriteriaNodeGetter interface {
+	GetCriteriaNodeIDs(ctx context.Context, IDs ...uuid.UUID) (map[uuid.UUID]uuid.UUID, error)
+}
+
 type IDGenerator interface {
 	GenID() (uuid.UUID, error)
 }

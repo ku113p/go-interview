@@ -2,11 +2,13 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go-interview/internal/biography/domain"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -18,6 +20,7 @@ var _ domain.LifeAreaParentChanger = (*AreaRepository)(nil)
 var _ domain.LifeAreaGoalChanger = (*AreaRepository)(nil)
 var _ domain.CriteriaDeleter = (*AreaRepository)(nil)
 var _ domain.CriteriaCreator = (*AreaRepository)(nil)
+var _ domain.CriteriaNodeGetter = (*AreaRepository)(nil)
 
 type AreaRepository struct {
 	db *pgxpool.Pool
@@ -131,7 +134,7 @@ func (r *AreaRepository) CreateCriteria(ctx context.Context, criteria ...*domain
 			c.NodeID,
 			c.CreatedAt,
 			c.UpdatedAt,
-			c.Description,
+			c.Description.String(),
 			c.IsCompleted,
 		)
 
@@ -163,6 +166,9 @@ func (r *AreaRepository) GetLifeArea(ctx context.Context, id uuid.UUID) (*domain
 		SELECT * FROM nodes WHERE id = $1
 	`, id)
 	if err := lifeAreaSQL.Scan(row); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
 		return nil, fmt.Errorf("get node: %w", err)
 	}
 	area := lifeAreaSQL.ToDomain()
@@ -174,7 +180,14 @@ func (r *AreaRepository) GetLifeArea(ctx context.Context, id uuid.UUID) (*domain
 	}
 	for rows.Next() {
 		var criterionSQL CriterionSQL
-		if err := criterionSQL.Scan(rows); err != nil {
+		if err := rows.Scan(
+			&criterionSQL.ID,
+			&criterionSQL.NodeID,
+			&criterionSQL.CreatedAt,
+			&criterionSQL.UpdatedAt,
+			&criterionSQL.Description,
+			&criterionSQL.IsCompleted,
+		); err != nil {
 			return nil, fmt.Errorf("scan criterion: %w", err)
 		}
 		area.Criteria = append(area.Criteria, criterionSQL.ToDomain())
@@ -255,4 +268,49 @@ func (r *AreaRepository) DeleteCriteria(ctx context.Context, IDs ...uuid.UUID) e
 	}
 
 	return err
+}
+
+func (r *AreaRepository) GetCriteriaNodeIDs(ctx context.Context, IDs ...uuid.UUID) (map[uuid.UUID]uuid.UUID, error) {
+	result := make(map[uuid.UUID]uuid.UUID, len(IDs))
+	if len(IDs) == 0 {
+		return result, nil
+	}
+
+	inParams := make([]string, 0, len(IDs))
+	args := make([]any, 0, len(IDs))
+	for ind, ID := range IDs {
+		inParams = append(inParams, fmt.Sprintf("$%d", ind+1))
+		args = append(args, ID)
+	}
+	joinedInParams := strings.Join(inParams, ",")
+
+	query := fmt.Sprintf(
+		"SELECT id, node_id FROM criteria WHERE id IN (%s)",
+		joinedInParams,
+	)
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("get criteria nodes: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var criterionID uuid.UUID
+		var nodeID uuid.UUID
+		if err := rows.Scan(&criterionID, &nodeID); err != nil {
+			return nil, fmt.Errorf("scan criteria node: %w", err)
+		}
+		result[criterionID] = nodeID
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate criteria nodes: %w", err)
+	}
+
+	if len(result) != len(IDs) {
+		return nil, domain.ErrNotFound
+	}
+
+	return result, nil
 }
