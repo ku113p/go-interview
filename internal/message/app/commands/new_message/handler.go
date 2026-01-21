@@ -51,7 +51,7 @@ func (h *TranscriptionHandler) Handle(ctx context.Context, cmd *NewMessageComman
 	}
 
 	var extractedText string
-	if cmd.MediaType == "text" {
+	if cmd.MediaType == string(domain.Text) {
 		b, err := io.ReadAll(cmd.Stream)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read stream: %w", err)
@@ -60,17 +60,18 @@ func (h *TranscriptionHandler) Handle(ctx context.Context, cmd *NewMessageComman
 	} else {
 		var audioStream io.Reader
 		var err error
-		if cmd.MediaType == "audio" {
+		switch cmd.MediaType {
+		case string(domain.Audio):
 			audioStream, err = h.processor.ExtractAudio(ctx, cmd.Stream)
 			if err != nil {
 				return nil, fmt.Errorf("failed to extract audio: %w", err)
 			}
-		} else if cmd.MediaType == "video" {
+		case string(domain.Video):
 			audioStream, err = h.processor.ExtractAudio(ctx, cmd.Stream)
 			if err != nil {
 				return nil, fmt.Errorf("failed to extract audio: %w", err)
 			}
-		} else {
+		default:
 			return nil, fmt.Errorf("unsupported media type: %s", cmd.MediaType)
 		}
 
@@ -88,7 +89,7 @@ func (h *TranscriptionHandler) Handle(ctx context.Context, cmd *NewMessageComman
 
 	rawData := domain.NewRawData(
 		h.genID.Generate(),
-		rawDataStoragePath,
+		*rawDataStoragePath,
 		domain.MediaType(cmd.MediaType),
 	)
 	err = h.repo.CreateRawData(ctx, rawData)
