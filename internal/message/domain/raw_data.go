@@ -1,7 +1,9 @@
 package domain
 
 import (
-	common "go-interview/internal/common/domain"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type MediaType string
@@ -13,18 +15,19 @@ const (
 )
 
 type RawData struct {
-	common.Entity
+	ID uuid.UUID
+
+	CreatedAt time.Time
+
 	S3Path    string
 	MediaType MediaType
 }
 
-func NewRawData(s3Path string, mediaType MediaType) *RawData {
-	rawData := &RawData{
+func NewRawData(id uuid.UUID, s3Path string, mediaType MediaType) *RawData {
+	return &RawData{
+		ID:        id,
+		CreatedAt: time.Now(),
 		S3Path:    s3Path,
 		MediaType: mediaType,
 	}
-
-	common.InitEntity(&rawData.Entity)
-
-	return rawData
 }

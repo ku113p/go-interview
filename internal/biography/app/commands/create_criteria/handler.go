@@ -51,7 +51,7 @@ func (h *CreateCriteriaHandler) Handle(ctx context.Context, cmd CreateCriteriaCo
 	criteriaToCreate := make([]*domain.Criterion, 0, len(cmd.Criteria))
 	criteriaIDs := make([]string, 0, len(cmd.Criteria))
 	for _, c := range cmd.Criteria {
-		id, err := h.genID.GenID()
+		id, err := h.genID.Generate()
 		if err != nil {
 			return nil, err
 		}

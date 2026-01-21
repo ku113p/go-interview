@@ -8,6 +8,6 @@ func NewUUID7Generator() *UUID7Generator {
 	return &UUID7Generator{}
 }
 
-func (g *UUID7Generator) GenID() (uuid.UUID, error) {
+func (g *UUID7Generator) Generate() (uuid.UUID, error) {
 	return uuid.NewV7()
 }

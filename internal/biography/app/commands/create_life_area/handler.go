@@ -39,7 +39,7 @@ func (h *CreateLifeAreaHandler) Handle(ctx context.Context, cmd CreateLifeAreaCo
 		parentID = &parentPreID
 	}
 
-	id, err := h.genID.GenID()
+	id, err := h.genID.Generate()
 	if err != nil {
 		return nil, err
 	}
