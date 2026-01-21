@@ -43,5 +43,5 @@ type CriteriaNodeGetter interface {
 }
 
 type IDGenerator interface {
-	GenID() (uuid.UUID, error)
+	Generate() (uuid.UUID, error)
 }
