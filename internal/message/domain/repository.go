@@ -36,7 +36,7 @@ type TranscriptDeleter interface {
 }
 
 type FileSaver interface {
-	Save(ctx context.Context, stream io.Reader) (string, error)
+	Save(ctx context.Context, stream io.Reader) (*string, error)
 }
 
 type FileGetter interface {
