@@ -7,7 +7,7 @@ import (
 )
 
 type FactCreator interface {
-	CreateFact(ctx context.Context, fact *Fact) error
+	CreateFacts(ctx context.Context, facts []*Fact) error
 }
 
 type EmbeddingCreator interface {
@@ -20,4 +20,8 @@ type VectorGenerator interface {
 
 type IDGenerator interface {
 	Generate() (uuid.UUID, error)
+}
+
+type FactExtractor interface {
+	ExtractFacts(ctx context.Context, text, goal string) ([]string, error)
 }
