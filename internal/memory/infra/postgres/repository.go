@@ -21,15 +21,23 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) CreateFact(ctx context.Context, fact *domain.Fact) error {
-	factSQL := factToSQL(fact)
+func (r *Repository) CreateFacts(ctx context.Context, facts []*domain.Fact) error {
+	if len(facts) == 0 {
+		return nil
+	}
 
-	_, err := r.db.Exec(ctx, `
-		INSERT INTO facts (id, created_at, node_id, info, date_time)
-		VALUES ($1, $2, $3, $4, $5)
-	`, factSQL.ID, factSQL.CreatedAt, factSQL.NodeID, factSQL.Info, factSQL.DateTime)
-	if err != nil {
-		return fmt.Errorf("create fact: %w", err)
+	batch := &pgx.Batch{}
+	for _, fact := range facts {
+		fSQL := factToSQL(fact)
+		batch.Queue(`
+			INSERT INTO facts (id, created_at, node_id, info, date_time)
+			VALUES ($1, $2, $3, $4, $5)
+		`, fSQL.ID, fSQL.CreatedAt, fSQL.NodeID, fSQL.Info, fSQL.DateTime)
+	}
+
+	br := r.db.SendBatch(ctx, batch)
+	if err := br.Close(); err != nil {
+		return fmt.Errorf("execute batch: %w", err)
 	}
 
 	return nil
