@@ -25,3 +25,7 @@ type CriteriaMarker interface {
 type IDGenerator interface {
 	Generate() (uuid.UUID, error)
 }
+
+type AICriteriaMeeter interface {
+	MeetCriteria(ctx context.Context, text string, criteria []*Criterion) ([]bool, error)
+}

@@ -1,43 +1,23 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
-	"time"
 
+	common "go-interview/internal/common/domain"
 	"go-interview/internal/memory/domain"
 )
 
-const (
-	defaultFactsModel = "anthropic/claude-3.5-sonnet"
-	defaultFactsURL   = "https://openrouter.ai/api/v1/chat/completions"
-)
-
 type OpenRouterFactExtractor struct {
-	client *http.Client
-	apiKey string
-	model  string
-	url    string
+	Generator common.OpenRouterGenerator
 }
 
-func NewOpenRouterFactExtractor(apiKey, model, url string) *OpenRouterFactExtractor {
-	if model == "" {
-		model = defaultFactsModel
-	}
-	if url == "" {
-		url = defaultFactsURL
-	}
-
+func NewOpenRouterFactExtractor(generator common.OpenRouterGenerator) *OpenRouterFactExtractor {
 	return &OpenRouterFactExtractor{
-		client: &http.Client{Timeout: 30 * time.Second},
-		apiKey: apiKey,
-		model:  model,
-		url:    url,
+		Generator: generator,
 	}
 }
 
@@ -70,41 +50,16 @@ type factsResponse struct {
 func (e *OpenRouterFactExtractor) ExtractFacts(ctx context.Context, text, goal string) ([]string, error) {
 	prompt := buildFactsPrompt(text, goal)
 	payload := chatRequest{
-		Model: e.model,
+		Model: "anthropic/claude-3.5-sonnet",
 		Messages: []chatMessage{
 			{Role: "system", Content: "You are a careful analyst that extracts factual statements from text."},
 			{Role: "user", Content: prompt},
 		},
 	}
 
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("marshal request: %w", err)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, e.url, bytes.NewReader(body))
-	if err != nil {
-		return nil, fmt.Errorf("build request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	if e.apiKey != "" {
-		req.Header.Set("Authorization", "Bearer "+e.apiKey)
-	}
-
-	resp, err := e.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status: %s", resp.Status)
-	}
-
 	var out chatResponse
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return nil, fmt.Errorf("decode response: %w", err)
+	if err := e.Generator.WithCompletion().Do(ctx, payload, &out); err != nil {
+		return nil, err
 	}
 
 	if out.Error != nil {
