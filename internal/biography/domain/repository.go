@@ -42,6 +42,10 @@ type CriteriaNodeGetter interface {
 	GetCriteriaNodeIDs(ctx context.Context, IDs ...uuid.UUID) (map[uuid.UUID]uuid.UUID, error)
 }
 
+type CriteriaMarker interface {
+	MarkCriteria(ctx context.Context, IDs ...uuid.UUID) error
+}
+
 type IDGenerator interface {
 	Generate() (uuid.UUID, error)
 }

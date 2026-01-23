@@ -21,6 +21,7 @@ var _ domain.LifeAreaGoalChanger = (*AreaRepository)(nil)
 var _ domain.CriteriaDeleter = (*AreaRepository)(nil)
 var _ domain.CriteriaCreator = (*AreaRepository)(nil)
 var _ domain.CriteriaNodeGetter = (*AreaRepository)(nil)
+var _ domain.CriteriaMarker = (*AreaRepository)(nil)
 
 type AreaRepository struct {
 	db *pgxpool.Pool
@@ -313,4 +314,19 @@ func (r *AreaRepository) GetCriteriaNodeIDs(ctx context.Context, IDs ...uuid.UUI
 	}
 
 	return result, nil
+}
+
+func (r *AreaRepository) MarkCriteria(ctx context.Context, ids ...uuid.UUID) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	query := `
+		UPDATE criteria
+		SET is_completed = true
+		WHERE id = ANY($1)
+	`
+
+	_, err := r.db.Exec(ctx, query, ids)
+	return err
 }
