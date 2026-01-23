@@ -60,7 +60,7 @@ func (h *Handler) Handle(ctx context.Context, cmd Command) error {
 			factID,
 			cmd.NodeID,
 			domain.NewInfo(info),
-			cmd.DateTime,
+			nil,
 		))
 	}
 
