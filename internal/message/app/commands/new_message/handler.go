@@ -110,5 +110,6 @@ func (h *TranscriptionHandler) Handle(ctx context.Context, cmd *NewMessageComman
 
 	return &NewMessageResult{
 		Text: extractedText,
+		Path: *rawDataStoragePath,
 	}, nil
 }
