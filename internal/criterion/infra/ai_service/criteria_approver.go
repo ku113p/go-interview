@@ -56,6 +56,10 @@ func (s *OpenRouterCriteriaApprover) MeetCriteria(ctx context.Context, text stri
 	systemPrompt := `You are a strict compliance checker. 
 	Output ONLY valid JSON.
 	Schema: {"results": [{"description": "exact criteria text", "meets": true/false}]}`
+	descriptions := make([]string, len(criteria))
+	for i, crit := range criteria {
+		descriptions[i] = crit.Description.String()
+	}
 
 	criteriaJSON, _ := json.Marshal(descriptions)
 	userContent := fmt.Sprintf("Text:\n%s\n\nCheck against these criteria:\n%s", text, string(criteriaJSON))
